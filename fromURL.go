@@ -15,28 +15,64 @@ type GenericInfo struct {
 	Limit  *RateLimit
 }
 
+var DIRECT_URLS = []string{
+	"://i.imgur.com/",
+	"://i.imgur.io/",
+}
+
+var ALBUM_URLS = []string{
+	"://imgur.com/a/",
+	"://m.imgur.com/a/",
+	"://imgur.io/a/",
+	"://m.imgur.io/a/",
+}
+
+var GALLERY_URLS = []string{
+	"://imgur.com/gallery/",
+	"://m.imgur.com/gallery/",
+	"://imgur.io/gallery/",
+	"://m.imgur.io/gallery/",
+}
+
+var IMAGE_URLS = []string{
+	"://imgur.com/",
+	"://m.imgur.com/",
+	"://imgur.io/",
+	"://m.imgur.io/",
+}
+
+func matchesSlice(url string, validFormats []string) bool {
+	for _, format := range validFormats {
+		if strings.Contains(url, format) {
+			return true
+		}
+	}
+
+	return false
+}
+
 // GetInfoFromURL tries to query imgur based on information identified in the URL.
 // returns image/album info, status code of the request, error
 func (client *Client) GetInfoFromURL(url string) (*GenericInfo, int, error) {
 	url = strings.TrimSpace(url)
 
 	// https://i.imgur.com/<id>.jpg -> image
-	if strings.Contains(url, "://i.imgur.com/") {
+	if matchesSlice(url, DIRECT_URLS) {
 		return client.directImageURL(url)
 	}
 
 	// https://imgur.com/a/<id> -> album
-	if strings.Contains(url, "://imgur.com/a/") || strings.Contains(url, "://m.imgur.com/a/") {
+	if matchesSlice(url, ALBUM_URLS) {
 		return client.albumURL(url)
 	}
 
 	// https://imgur.com/gallery/<id> -> gallery album
-	if strings.Contains(url, "://imgur.com/gallery/") || strings.Contains(url, "://m.imgur.com/gallery/") {
+	if matchesSlice(url, GALLERY_URLS) {
 		return client.galleryURL(url)
 	}
 
 	// https://imgur.com/<id> -> image
-	if strings.Contains(url, "://imgur.com/") || strings.Contains(url, "://m.imgur.com/") {
+	if matchesSlice(url, IMAGE_URLS) {
 		return client.imageURL(url)
 	}
 
